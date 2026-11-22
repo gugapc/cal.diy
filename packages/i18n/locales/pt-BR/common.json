@@ -1490,6 +1490,8 @@
   "success_api_key_created_bold_tagline": "Salve esta chave de API em um local seguro.",
   "you_will_only_view_it_once": "Não será possível visualizá-la novamente ao fechar esta janela.",
   "copy_to_clipboard": "Copiar para a área de transferência",
+  "copy_booking_summary": "Copiar resumo",
+  "booking_summary_copied": "Resumo da reserva copiado",
   "enabled_after_update": "Ativado após a atualização",
   "enabled_after_update_description": "O link privado funcionará após salvar",
   "confirm_delete_api_key": "Revogar esta chave de API",
