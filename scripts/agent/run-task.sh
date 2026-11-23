@@ -42,7 +42,9 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-RUNS_DIR="$SCRIPT_DIR/runs"
+# RUN_TASK_RUNS_DIR permite gravar as execuções em outro lugar (usado pelo
+# test-run-task.sh para não poluir runs/).
+RUNS_DIR="${RUN_TASK_RUNS_DIR:-$SCRIPT_DIR/runs}"
 
 # Timestamp em UTC (neutro, independente do fuso da máquina). Se duas execuções
 # caírem no mesmo segundo, acrescenta um sufixo em vez de sobrescrever.
@@ -88,14 +90,39 @@ if [ "$EXIT_CODE" -ne 0 ]; then
   REASON="O processo claude saiu com código $EXIT_CODE."
 fi
 
-# Verificação 2: o JSON parseou (e é um objeto).
-if jq -e 'type == "object"' "$RAW" >/dev/null 2>&1; then
+# Nenhuma decisão abaixo depende do exit status do jq: com entrada vazia ele
+# pode não produzir saída nenhuma e, conforme a versão, sair com 0. Por isso
+# o script sempre compara o valor impresso pelo jq com o esperado.
+
+# Extrai um campo do JSON já validado, como texto JSON compacto. Se a extração
+# vier vazia (ou falhar), devolve null, que é seguro para --argjson.
+json_field() {
+  local value
+  value="$(jq -c "$1" "$RAW" 2>/dev/null)" || value=""
+  if [ -z "$value" ]; then
+    value="null"
+  fi
+  printf '%s' "$value"
+}
+
+# Verificação 2: o JSON parseou. Válido só se o arquivo não estiver vazio e
+# contiver exatamente um valor JSON do tipo objeto. Com -s (slurp), entrada
+# vazia vira [] e várias entradas viram um array maior; JSON inválido não
+# imprime nada. Só o texto "object" conta como válido.
+JSON_TYPE=""
+if [ -s "$RAW" ]; then
+  JSON_TYPE="$(jq -rs 'if length == 1 then (.[0] | type) else "\(length) valores" end' "$RAW" 2>/dev/null)" || JSON_TYPE=""
+fi
+
+if [ "$JSON_TYPE" = "object" ]; then
   JSON_OK=true
 elif [ "$VERDICT" = "success" ]; then
   VERDICT="failure"
   FAILED_CHECK="json_parse"
   if [ ! -s "$RAW" ]; then
     REASON="A saída do claude veio vazia; não há JSON para ler."
+  elif [ -n "$JSON_TYPE" ]; then
+    REASON="A saída do claude não é um único objeto JSON (encontrado: $JSON_TYPE)."
   else
     REASON="A saída do claude não é um objeto JSON válido."
   fi
@@ -104,14 +131,15 @@ fi
 IS_ERROR="null"
 SUBTYPE="null"
 if [ "$JSON_OK" = true ]; then
-  IS_ERROR="$(jq -c '.is_error' "$RAW")"
-  SUBTYPE="$(jq -c '.subtype' "$RAW")"
+  IS_ERROR="$(json_field '.is_error')"
+  SUBTYPE="$(json_field '.subtype')"
   # result.md recebe o texto cru do campo result, quando ele existir.
   jq -r 'if (.result | type) == "string" then .result else empty end' "$RAW" >"$RESULT"
 
-  # Verificação 3: is_error == false e subtype == "success".
-  if [ "$VERDICT" = "success" ] &&
-    ! jq -e '.is_error == false and .subtype == "success"' "$RAW" >/dev/null; then
+  # Verificação 3: is_error == false e subtype == "success". Só o texto
+  # "true" impresso pelo jq conta como aprovado.
+  RESULT_OK="$(jq -r '.is_error == false and .subtype == "success"' "$RAW" 2>/dev/null)" || RESULT_OK=""
+  if [ "$VERDICT" = "success" ] && [ "$RESULT_OK" != "true" ]; then
     VERDICT="failure"
     FAILED_CHECK="result_status"
     REASON="O JSON indica falha: is_error=$IS_ERROR, subtype=$SUBTYPE (esperado is_error=false, subtype=\"success\")."
@@ -120,7 +148,19 @@ else
   : >"$RESULT"
 fi
 
-jq -n \
+FINAL_EXIT=0
+if [ "$VERDICT" = "failure" ]; then
+  if [ "$EXIT_CODE" -ne 0 ]; then
+    FINAL_EXIT="$EXIT_CODE"
+  else
+    FINAL_EXIT=1
+  fi
+fi
+
+# Escreve num arquivo temporário e só então renomeia: se o jq falhar, não fica
+# um status.json vazio ou pela metade, e o script falha em vez de seguir.
+STATUS_TMP="$STATUS.tmp"
+if ! jq -n \
   --arg verdict "$VERDICT" \
   --arg reason "$REASON" \
   --arg failed_check "$FAILED_CHECK" \
@@ -148,7 +188,17 @@ jq -n \
       stderr: "stderr.log",
       status: "status.json"
     }
-  }' >"$STATUS"
+  }' >"$STATUS_TMP" 2>>"$ERR" || ! mv "$STATUS_TMP" "$STATUS"; then
+  rm -f "$STATUS_TMP"
+  STATUS_REASON="Não foi possível escrever status.json (veredito calculado: $VERDICT; motivo: $REASON)."
+  printf '[run-task] FALHA (status_write): %s\n' "$STATUS_REASON" >>"$ERR"
+  log "FALHA (status_write): $STATUS_REASON"
+  log "Detalhes: $ERR"
+  if [ "$FINAL_EXIT" -eq 0 ]; then
+    FINAL_EXIT=1
+  fi
+  exit "$FINAL_EXIT"
+fi
 
 if [ "$VERDICT" = "success" ]; then
   log "SUCESSO: $REASON"
@@ -159,7 +209,4 @@ fi
 printf '[run-task] FALHA (%s): %s\n' "$FAILED_CHECK" "$REASON" >>"$ERR"
 log "FALHA ($FAILED_CHECK): $REASON"
 log "Detalhes: $STATUS e $ERR"
-if [ "$EXIT_CODE" -ne 0 ]; then
-  exit "$EXIT_CODE"
-fi
-exit 1
+exit "$FINAL_EXIT"
