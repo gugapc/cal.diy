@@ -11,7 +11,7 @@
   "requiredChecks": [
     {
       "id": "biome",
-      "command": "yarn biome check --no-errors-on-unmatched --files-ignore-unknown=true {changedFiles}"
+      "command": "yarn biome check --no-errors-on-unmatched --files-ignore-unknown=true --max-diagnostics=200 {changedFiles}"
     },
     {
       "id": "vitest-related",

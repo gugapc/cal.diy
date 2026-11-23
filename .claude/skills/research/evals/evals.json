@@ -9,12 +9,30 @@
       "expected_output": "Branch fix/<slug> off main, specs/<slug>/research.md describing current behaviour and an open question on warn-vs-silent; no source edits, no plan.md",
       "files": [],
       "assertions": [
-        { "id": "branch_off_main", "text": "A new branch with a fix/ prefix was created before research.md was written; nothing was committed on main" },
-        { "id": "research_md_written", "text": "specs/<slug>/research.md exists, in English, with Task, Current Behavior, Relevant Files and Open Questions sections" },
-        { "id": "only_research_md", "text": "research.md is the only file created under specs/<slug>/ — no plan.md, design.md or other template copies, and specs/_templates was not copied wholesale" },
-        { "id": "no_source_edits", "text": "git status shows no modified or new files outside specs/<slug>/ — businessHours.ts and its test are untouched" },
-        { "id": "locates_files", "text": "research.md names businessHours.ts and businessHours.test.ts with the line where a negative duration slips through" },
-        { "id": "ambiguity_recorded", "text": "research.md records an open question on whether a negative duration should warn or stay silent, noting the docstring's 'staying silent beats warning wrongly' rule" },
+        {
+          "id": "branch_off_main",
+          "text": "A new branch with a fix/ prefix was created before research.md was written; nothing was committed on main"
+        },
+        {
+          "id": "research_md_written",
+          "text": "specs/<slug>/research.md exists, in English, with Task, Current Behavior, Relevant Files and Open Questions sections"
+        },
+        {
+          "id": "only_research_md",
+          "text": "research.md is the only file created under specs/<slug>/ — no plan.md, design.md or other template copies, and specs/_templates was not copied wholesale"
+        },
+        {
+          "id": "no_source_edits",
+          "text": "git status shows no modified or new files outside specs/<slug>/ — businessHours.ts and its test are untouched"
+        },
+        {
+          "id": "locates_files",
+          "text": "research.md names businessHours.ts and businessHours.test.ts with the line where a negative duration slips through"
+        },
+        {
+          "id": "ambiguity_recorded",
+          "text": "research.md records an open question on whether a negative duration should warn or stay silent, noting the docstring's 'staying silent beats warning wrongly' rule"
+        },
         { "id": "no_push_attempted", "text": "No git push was attempted" }
       ]
     },
@@ -26,10 +44,22 @@
       "expected_output": "research.md maps every layer (prisma, tRPC profile router, profile UI, Booker consumers, locale), records storage and whose-hours questions, handles the missing CLAUDE.md without creating it",
       "files": [],
       "assertions": [
-        { "id": "all_layers_mapped", "text": "research.md lists real paths for each layer: prisma schema, the tRPC updateProfile router, the profile settings UI, the Booker code that consumes the business-hours constant, and the en locale" },
-        { "id": "open_questions_recorded", "text": "research.md records at least the storage trade-off (dedicated columns vs metadata JSON) and whose hours the Booker should use as open questions" },
-        { "id": "claude_md_conditional", "text": "The root CLAUDE.md was checked for and, being absent, noted as absent — no CLAUDE.md was created, copied or fetched from another branch" },
-        { "id": "only_research_md", "text": "research.md is the only file created under specs/<slug>/; no design.md, no decisions.md, no broken CLAUDE.md symlink copied from _templates" },
+        {
+          "id": "all_layers_mapped",
+          "text": "research.md lists real paths for each layer: prisma schema, the tRPC updateProfile router, the profile settings UI, the Booker code that consumes the business-hours constant, and the en locale"
+        },
+        {
+          "id": "open_questions_recorded",
+          "text": "research.md records at least the storage trade-off (dedicated columns vs metadata JSON) and whose hours the Booker should use as open questions"
+        },
+        {
+          "id": "claude_md_conditional",
+          "text": "The root CLAUDE.md was checked for and, being absent, noted as absent — no CLAUDE.md was created, copied or fetched from another branch"
+        },
+        {
+          "id": "only_research_md",
+          "text": "research.md is the only file created under specs/<slug>/; no design.md, no decisions.md, no broken CLAUDE.md symlink copied from _templates"
+        },
         { "id": "no_source_edits", "text": "No file outside specs/<slug>/ was modified" }
       ]
     },
@@ -41,9 +71,18 @@
       "expected_output": "Branches off main carrying the changes, writes research.md describing the uncommitted diff, leaves the four files untouched, hands over to plan instead of committing",
       "files": [],
       "assertions": [
-        { "id": "branch_carries_changes", "text": "A new branch was created and the four uncommitted files are still modified on it, unchanged" },
-        { "id": "diff_described", "text": "research.md lists all four modified files and what each change does" },
-        { "id": "no_commit", "text": "No commit was made — the run stops after research and points to the plan step" },
+        {
+          "id": "branch_carries_changes",
+          "text": "A new branch was created and the four uncommitted files are still modified on it, unchanged"
+        },
+        {
+          "id": "diff_described",
+          "text": "research.md lists all four modified files and what each change does"
+        },
+        {
+          "id": "no_commit",
+          "text": "No commit was made — the run stops after research and points to the plan step"
+        },
         { "id": "no_push_attempted", "text": "No git push was attempted" }
       ]
     }
