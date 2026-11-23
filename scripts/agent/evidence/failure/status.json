@@ -1,0 +1,18 @@
+{
+  "verdict": "failure",
+  "reason": "O processo claude saiu com código 1.",
+  "failed_check": "exit_code",
+  "exit_code": 1,
+  "json_parsed": true,
+  "is_error": true,
+  "subtype": "error_max_turns",
+  "task": "Leia o arquivo scripts/agent/run-task.sh com a ferramenta Read e resuma em uma frase o que ele faz.",
+  "started_at": "2026-11-23T14:49:59Z",
+  "finished_at": "2026-11-23T14:50:03Z",
+  "files": {
+    "raw_json": "output.json",
+    "result": "result.md",
+    "stderr": "stderr.log",
+    "status": "status.json"
+  }
+}
