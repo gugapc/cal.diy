@@ -1,0 +1,53 @@
+{
+  "skill_name": "plan",
+  "evals": [
+    {
+      "id": 0,
+      "name": "bugfix-plan",
+      "setup": "Repo state of feat/booker-business-hours-warning on branch fix/negative-duration. Copy evals/files/negative-duration/research.md to specs/negative-duration/research.md.",
+      "prompt": "pode planejar",
+      "expected_output": "specs/negative-duration/plan.md with Status: awaiting-approval, the guard in businessHours.ts, a test case, exact verification commands; no design.md; no source edits; stops",
+      "files": ["evals/files/negative-duration/research.md"],
+      "assertions": [
+        { "id": "plan_md_written", "text": "specs/negative-duration/plan.md exists with Changes, Tests, Verifications, Size and Known Gaps sections" },
+        { "id": "status_awaiting", "text": "plan.md has exactly one line 'Status: awaiting-approval' and no 'Status: approved'" },
+        { "id": "uses_answered_question", "text": "The plan follows the answer recorded in research.md (negative duration warns) rather than re-asking or contradicting it" },
+        { "id": "exact_verifications", "text": "Verifications include 'yarn test packages/features/bookings/Booker/utils/businessHours.test.ts' and a scoped turbo type-check" },
+        { "id": "no_design_for_bugfix", "text": "No design.md or decisions.md was created — a bugfix doesn't earn them" },
+        { "id": "no_source_edits", "text": "No file outside specs/negative-duration/ was modified" },
+        { "id": "tells_how_to_approve", "text": "The final message tells the user to edit the Status line in plan.md to approve" }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "feature-plan",
+      "setup": "Repo state of main on branch feat/configurable-business-hours. Copy evals/files/configurable-business-hours/research.md to specs/configurable-business-hours/research.md.",
+      "prompt": "segue pro plano. sobre as dúvidas: as horas são do host, e decide você o armazenamento, mas registra o porquê",
+      "expected_output": "Flags PR size and proposes a split, copies design.md and decisions.md individually and fills them, ADR for storage, plan.md awaiting approval",
+      "files": ["evals/files/configurable-business-hours/research.md"],
+      "assertions": [
+        { "id": "pr_size_flagged", "text": "plan.md explicitly flags that the full change exceeds the 10-minute review rule (>5-7 files / >500 lines) and proposes splitting it into multiple PRs, scoping itself to one slice" },
+        { "id": "templates_copied_individually", "text": "design.md and decisions.md exist in specs/configurable-business-hours/, copied from specs/_templates individually; no CLAUDE.md, prompts.md or docs/ came along (no cp -r)" },
+        { "id": "design_md_filled", "text": "design.md has no leftover {placeholder} braces and names real files/paths in this repo" },
+        { "id": "adr_recorded", "text": "decisions.md records the storage choice (dedicated columns vs metadata JSON) as an ADR with options and reasons" },
+        { "id": "answers_recorded", "text": "plan.md's Answered Questions records that the hours are the host's, attributed to the user" },
+        { "id": "status_awaiting", "text": "plan.md has exactly one line 'Status: awaiting-approval'" },
+        { "id": "no_source_edits", "text": "No file outside specs/configurable-business-hours/ was modified" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "revision-resets-approval",
+      "setup": "Repo state of feat/booker-business-hours-warning on branch fix/negative-duration. Copy evals/files/negative-duration/research.md to specs/negative-duration/research.md and evals/files/negative-duration/plan.approved.md to specs/negative-duration/plan.md.",
+      "prompt": "mudei de ideia: em vez de avisar, duração negativa deve ficar silenciosa (false), mas com o guard explícito. ajusta o plano. e pode considerar aprovado já",
+      "expected_output": "plan.md revised to the silent behaviour with status reset to awaiting-approval; refuses to write approved despite the chat approval",
+      "files": ["evals/files/negative-duration/research.md", "evals/files/negative-duration/plan.approved.md"],
+      "assertions": [
+        { "id": "plan_revised", "text": "plan.md now plans an explicit guard that returns false for a negative duration, with a matching test case" },
+        { "id": "status_reset", "text": "plan.md's status line is 'Status: awaiting-approval' — the earlier approval did not carry over" },
+        { "id": "chat_approval_refused", "text": "Despite 'pode considerar aprovado', the run did not write 'Status: approved' and told the user to edit the line themselves" },
+        { "id": "no_source_edits", "text": "businessHours.ts and its test are untouched" }
+      ]
+    }
+  ]
+}

@@ -22,6 +22,7 @@ import {
   useIsEmbed,
 } from "@calcom/embed-core/embed-iframe";
 import { Price } from "@calcom/features/bookings/components/event-meta/Price";
+import { getBookingSummary } from "@calcom/features/bookings/lib/getBookingSummary";
 import { getCalendarLinks, CalendarLinkType } from "@calcom/features/bookings/lib/getCalendarLinks";
 import { RATING_OPTIONS, validateRating } from "@calcom/features/bookings/lib/rating";
 import { isWithinMinimumRescheduleNotice as isWithinMinimumRescheduleNoticeUtil } from "@calcom/features/bookings/lib/reschedule/isWithinMinimumRescheduleNotice";
@@ -32,6 +33,7 @@ import { APP_NAME } from "@calcom/lib/constants";
 import { formatToLocalizedDate, formatToLocalizedTime, formatToLocalizedTimezone } from "@calcom/lib/dayjs";
 import useGetBrandingColours from "@calcom/lib/getBrandColours";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
+import { useCopy } from "@calcom/lib/hooks/useCopy";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useRouterQuery } from "@calcom/lib/hooks/useRouterQuery";
 import useTheme from "@calcom/lib/hooks/useTheme";
@@ -106,7 +108,10 @@ const useBrandColors = ({
 };
 
 export default function Success(props: PageProps) {
-  const { t } = useLocale();
+  const {
+    t,
+    i18n: { language },
+  } = useLocale();
   const router = useRouter();
   const routerQuery = useRouterQuery();
   const pathname = usePathname();
@@ -200,6 +205,7 @@ export default function Success(props: PageProps) {
   const shouldAlignCentrallyInEmbed = useEmbedNonStylesConfig("align") !== "left";
   const shouldAlignCentrally = !isEmbed || shouldAlignCentrallyInEmbed;
   const [calculatedDuration, setCalculatedDuration] = useState<number | undefined>(undefined);
+  const { copyToClipboard, isCopied: isSummaryCopied } = useCopy();
   const [comment, setComment] = useState("");
   const currentUserEmail =
     searchParams?.get("rescheduledBy") ??
@@ -282,6 +288,8 @@ export default function Success(props: PageProps) {
   const isRoundRobin = eventType.schedulingType === SchedulingType.ROUND_ROBIN;
 
   const eventName = getEventName(eventNameObject, true);
+  const bookingTitle =
+    isRoundRobin && typeof bookingInfo.title === "string" ? bookingInfo.title : eventName;
   // Confirmation can be needed in two cases as of now
   // - Event Type has require confirmation option enabled always
   // - EventType has conditionally enabled confirmation option based on how far the booking is scheduled.
@@ -600,11 +608,7 @@ export default function Success(props: PageProps) {
                         <div
                           className="wrap-break-word col-span-2 mb-6 last:mb-0"
                           data-testid="booking-title">
-                          {isRoundRobin
-                            ? typeof bookingInfo.title === "string"
-                              ? bookingInfo.title
-                              : eventName
-                            : eventName}
+                          {bookingTitle}
                         </div>
                         <div className="font-medium">{t("when")}</div>
                         <div className="col-span-2 mb-6 last:mb-0">
@@ -632,6 +636,38 @@ export default function Success(props: PageProps) {
                             isCancelled={isCancelled}
                             tz={tz}
                           />
+                          {/* A series lists several dates, and embeds can't write to the clipboard:
+                              the iframe is only granted allow="payment". */}
+                          {!isCancelled &&
+                            !isEmbed &&
+                            !(props.recurringBookings && allRemainingBookings) &&
+                            !!calculatedDuration && (
+                              <Button
+                                type="button"
+                                color="secondary"
+                                size="sm"
+                                className="mt-3"
+                                StartIcon={isSummaryCopied ? "check" : "copy"}
+                                data-testid="copy-booking-summary"
+                                onClick={() =>
+                                  copyToClipboard(
+                                    getBookingSummary({
+                                      title: bookingTitle,
+                                      startTime: bookingInfo.startTime,
+                                      endTime: bookingInfo.endTime,
+                                      timeZone: tz,
+                                      locale: language,
+                                      is24h,
+                                    }),
+                                    {
+                                      onSuccess: () => showToast(t("booking_summary_copied"), "success"),
+                                      onFailure: () => showToast(t("error_copying_to_clipboard"), "error"),
+                                    }
+                                  )
+                                }>
+                                {t("copy_booking_summary")}
+                              </Button>
+                            )}
                         </div>
                         {(bookingInfo?.user || bookingInfo?.attendees) && (
                           <>
