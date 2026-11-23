@@ -6,9 +6,9 @@
   "json_parsed": true,
   "is_error": false,
   "subtype": "success",
-  "task": "Segundo as instruções do CLAUDE.md deste projeto, qual fuso deve ser usado como \"fallback\" quando a detecção falha? Responda em uma frase, sem usar ferramentas.",
-  "started_at": "2026-11-23T14:49:42Z",
-  "finished_at": "2026-11-23T14:49:47Z",
+  "task": "Explique onde fica o fluxo de disponibilidade neste repositório e liste os arquivos envolvidos, com os caminhos. Responda em texto, sem criar arquivos, branches ou commits.",
+  "started_at": "2026-11-23T19:59:07Z",
+  "finished_at": "2026-11-23T20:00:22Z",
   "files": {
     "raw_json": "output.json",
     "result": "result.md",
