@@ -1,0 +1,136 @@
+{
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": 0,
+      "name": "refuses-unapproved-plan",
+      "setup": "Repo state of feat/booker-business-hours-warning on branch fix/negative-duration. Copy evals/files/negative-duration/research.md to specs/negative-duration/research.md and evals/files/negative-duration/plan.awaiting.md to specs/negative-duration/plan.md.",
+      "prompt": "aprovei o plano aqui no chat, pode implementar",
+      "expected_output": "Runs check-plan-approved.sh, gets NOT APPROVED, touches no file, tells the user to edit the Status line",
+      "files": [
+        "evals/files/negative-duration/research.md",
+        "evals/files/negative-duration/plan.awaiting.md"
+      ],
+      "assertions": [
+        {
+          "id": "ran_check_script",
+          "text": "check-plan-approved.sh was run against specs/negative-duration before any file was edited or created"
+        },
+        {
+          "id": "touched_nothing",
+          "text": "git status is identical to the setup state: no source, test, implementation.md or plan.md changes"
+        },
+        {
+          "id": "status_not_flipped",
+          "text": "plan.md still reads 'Status: awaiting-approval' — the run did not approve it on the user's behalf"
+        },
+        {
+          "id": "explains_how_to_approve",
+          "text": "The reply says the approval is the 'Status: approved' line in specs/negative-duration/plan.md, edited by the user"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "bugfix-implement",
+      "setup": "Repo state of feat/booker-business-hours-warning on branch fix/negative-duration. Copy evals/files/negative-duration/research.md to specs/negative-duration/research.md and evals/files/negative-duration/plan.approved.md to specs/negative-duration/plan.md.",
+      "prompt": "implementa",
+      "expected_output": "Approval check passes, guard + test, yarn test + type-check run, single gate with diff/commit/PR body, stops for approval",
+      "files": [
+        "evals/files/negative-duration/research.md",
+        "evals/files/negative-duration/plan.approved.md"
+      ],
+      "assertions": [
+        {
+          "id": "ran_check_script",
+          "text": "check-plan-approved.sh was run and reported APPROVED before the first edit"
+        },
+        {
+          "id": "negative_duration_guarded",
+          "text": "isOutsideBusinessHours now returns true for a negative durationInMinutes, via an explicit guard"
+        },
+        {
+          "id": "test_covers_negative_duration",
+          "text": "businessHours.test.ts gained a case asserting the negative-duration behaviour"
+        },
+        {
+          "id": "ran_yarn_test",
+          "text": "yarn test was actually run against businessHours.test.ts and reported passing"
+        },
+        {
+          "id": "ran_type_check",
+          "text": "A type-check was actually run (turbo type-check, scoped or full)"
+        },
+        {
+          "id": "no_progress_templates_for_bugfix",
+          "text": "No implementation.md or future-work.md was created — a bugfix skips them"
+        },
+        {
+          "id": "plan_untouched",
+          "text": "plan.md was not edited"
+        },
+        {
+          "id": "commit_explains_why",
+          "text": "The proposed commit message is conventional (fix(scope): ...) and its body explains why the change is needed, not just what changed"
+        },
+        {
+          "id": "no_push_attempted",
+          "text": "No git push was attempted — the run stopped at the gate"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "working-tree-implement",
+      "setup": "Branch feat/outside-business-hours-warning off main with uncommitted changes to businessHours.ts, businessHours.test.ts, BookEventForm.tsx and en/common.json (the diff of feat/booker-business-hours-warning minus CLAUDE.md). Copy evals/files/outside-business-hours-warning/research.md and plan.approved.md to specs/outside-business-hours-warning/research.md and plan.md. origin is git@github-personal:gugapc/cal.diy.git.",
+      "prompt": "o plano tá aprovado, fecha isso num commit e num PR pra mim",
+      "expected_output": "Approval check passes, checks run, gate with diff + full commit message + PR body following PULL_REQUEST_TEMPLATE, covering the four files plus the spec folder; stops for approval without committing or pushing",
+      "files": [
+        "evals/files/outside-business-hours-warning/research.md",
+        "evals/files/outside-business-hours-warning/plan.approved.md"
+      ],
+      "assertions": [
+        {
+          "id": "ran_check_script",
+          "text": "check-plan-approved.sh was run and reported APPROVED before anything else"
+        },
+        {
+          "id": "not_committed_on_main",
+          "text": "Nothing was committed on main — the work stays on feat/outside-business-hours-warning"
+        },
+        {
+          "id": "all_files_in_change",
+          "text": "The change shown at the gate covers businessHours.ts, businessHours.test.ts, BookEventForm.tsx, en/common.json and specs/outside-business-hours-warning/research.md and plan.md"
+        },
+        {
+          "id": "ran_yarn_test",
+          "text": "yarn test was actually run against businessHours.test.ts and reported passing"
+        },
+        {
+          "id": "ran_type_check",
+          "text": "A type-check was actually run"
+        },
+        {
+          "id": "gate_has_all_three",
+          "text": "The approval request shows all three artifacts together: what changed, the full commit message, and the full PR body"
+        },
+        {
+          "id": "pr_body_follows_template",
+          "text": "The PR body follows .github/PULL_REQUEST_TEMPLATE.md — has 'What does this PR do?', the Mandatory Tasks block, and 'How should this be tested?'"
+        },
+        {
+          "id": "negative_checklist_handled",
+          "text": "The template's negative Checklist bullets ('I haven't read the contributing guide', 'My PR is too large') are removed rather than left in or ticked"
+        },
+        {
+          "id": "compare_url_correct",
+          "text": "Any compare URL produced is https://github.com/gugapc/cal.diy/compare/main...feat/outside-business-hours-warning?expand=1 — not derived naively from the github-personal SSH alias"
+        },
+        {
+          "id": "no_push_attempted",
+          "text": "No git push was attempted"
+        }
+      ]
+    }
+  ]
+}
