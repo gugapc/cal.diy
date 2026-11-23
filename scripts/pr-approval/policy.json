@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "description": "PR auto-approval policy. A PR is auto-approved only when every condition below holds; anything else goes to a human reviewer.",
+  "remote": "origin",
+  "baseBranch": "main",
+  "allowedPaths": ["**/*.md", "docs/**", "specs/**", "scripts/agent/**"],
+  "maxDiff": {
+    "lines": 300,
+    "files": 10
+  },
+  "requiredChecks": [
+    {
+      "id": "biome",
+      "command": "yarn biome check --no-errors-on-unmatched --files-ignore-unknown=true {changedFiles}"
+    },
+    {
+      "id": "vitest-related",
+      "command": "TZ=UTC yarn vitest related --run --passWithNoTests {changedFiles}"
+    }
+  ],
+  "humanReview": {
+    "paths": [
+      "scripts/pr-approval/**",
+      ".claude/**",
+      "CLAUDE.md",
+      "**/CLAUDE.md",
+      ".github/**",
+      "packages/prisma/**",
+      "**/package.json",
+      "yarn.lock",
+      "**/.env*"
+    ],
+    "rules": [
+      "Any changed file matching humanReview.paths, even if it also matches allowedPaths (agent instructions, CI, schema, dependencies, env files and this policy itself).",
+      "Any changed file outside allowedPaths.",
+      "A diff above maxDiff.lines (additions + deletions) or maxDiff.files, or containing a binary file (its size cannot be measured).",
+      "A PR with no added or modified file left to check (deletion-only).",
+      "Any required check that is missing, failed, ran a command other than the policy's, or ran on another commit or a dirty tree.",
+      "Evidence that is missing, malformed, or for a commit other than the PR head.",
+      "A file list in the evidence that does not match the diff the controller recomputes from git.",
+      "A diff base other than the merge-base of the PR head with <remote>/<baseBranch>.",
+      "A PR head that cannot be read with git ls-remote, or that changes before the decision is recorded."
+    ]
+  }
+}

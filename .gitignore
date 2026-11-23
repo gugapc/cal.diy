@@ -120,3 +120,6 @@ _pagefind/
 
 # headless agent runs (evidence/ is versioned)
 scripts/agent/runs/
+
+# PR auto-approval: day-to-day evidence and decisions (evidence/ is versioned)
+scripts/pr-approval/decisions/
