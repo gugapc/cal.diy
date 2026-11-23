@@ -3,6 +3,11 @@ import { useIsPlatformBookerEmbed } from "@calcom/atoms/hooks/useIsPlatformBooke
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import type { UseBookingFormReturnType } from "@calcom/features/bookings/Booker/hooks/useBookingForm";
+import {
+  BUSINESS_HOURS,
+  formatBusinessHour,
+  isOutsideBusinessHours,
+} from "@calcom/features/bookings/Booker/utils/businessHours";
 import { formatEventFromTime } from "@calcom/features/bookings/Booker/utils/dates";
 import type { BookerEvent } from "@calcom/features/bookings/types";
 import ServerTrans from "@calcom/lib/components/ServerTrans";
@@ -72,6 +77,7 @@ export const BookEventForm = ({
   const bookingData = useBookerStoreContext((state) => state.bookingData);
   const rescheduleUid = useBookerStoreContext((state) => state.rescheduleUid);
   const username = useBookerStoreContext((state) => state.username);
+  const selectedDuration = useBookerStoreContext((state) => state.selectedDuration);
   const isPlatformBookerEmbed = useIsPlatformBookerEmbed();
   const { timeFormat, timezone } = useBookerTime();
 
@@ -88,6 +94,20 @@ export const BookEventForm = ({
     if (!eventType) return "USD";
     return getPaymentAppData(eventType)?.currency || "USD";
   }, [eventType]);
+
+  const outsideBusinessHoursMessage = useMemo(() => {
+    const isOutside = isOutsideBusinessHours({
+      startTime: timeslot,
+      durationInMinutes: selectedDuration,
+      timeZone: timezone,
+    });
+    if (!isOutside) return null;
+
+    return t("outside_business_hours_description", {
+      startTime: formatBusinessHour(BUSINESS_HOURS.startHour, timeFormat),
+      endTime: formatBusinessHour(BUSINESS_HOURS.endHour, timeFormat),
+    });
+  }, [timeslot, selectedDuration, timezone, timeFormat, t]);
 
   if (eventQuery.isError) return <Alert severity="warning" message={t("error_booking_event")} />;
   if (eventQuery.isPending || !eventQuery.data) return <FormSkeleton />;
@@ -170,6 +190,15 @@ export const BookEventForm = ({
                   ]}
                 />
               }
+            />
+          </div>
+        ) : outsideBusinessHoursMessage ? (
+          <div data-testid="outside-business-hours">
+            <Alert
+              className="my-2"
+              severity="warning"
+              title={t("outside_business_hours_title")}
+              message={outsideBusinessHoursMessage}
             />
           </div>
         ) : null}
