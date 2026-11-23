@@ -39,3 +39,13 @@ defaults e código novo neste repositório.
   detectado). Não fixar um formato rígido no código.
 - **Converter tudo para o fuso local de quem está olhando.** Não exibir o fuso
   do outro lado (organizador x convidado) em paralelo.
+
+## Testes e verificação
+
+Vale para qualquer mudança que acrescente ou altere comportamento visível na interface.
+
+- Teste a regra e a renderização. Além do teste da função, escreva um teste do componente que
+  exibe o resultado, cobrindo que ele aparece quando deve e não aparece quando não deve.
+- Antes de entregar, rode `yarn test` escopado nos arquivos alterados e `yarn type-check`.
+  Informe quais comandos rodaram e o resultado de cada um. Verificação que não pôde ser
+  executada deve ser relatada como tal, nunca omitida.
