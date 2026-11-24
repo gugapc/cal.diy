@@ -1,0 +1,18 @@
+{
+  "verdict": "success",
+  "reason": "Execução concluída: exit code 0, JSON válido, is_error=false e subtype=success.",
+  "failed_check": null,
+  "exit_code": 0,
+  "json_parsed": true,
+  "is_error": false,
+  "subtype": "success",
+  "task": "Explique onde fica o fluxo de disponibilidade neste repositório e liste os arquivos envolvidos, com os caminhos. Responda em texto, sem criar arquivos, branches ou commits.",
+  "started_at": "2026-11-23T19:59:07Z",
+  "finished_at": "2026-11-23T20:00:22Z",
+  "files": {
+    "raw_json": "output.json",
+    "result": "result.md",
+    "stderr": "stderr.log",
+    "status": "status.json"
+  }
+}

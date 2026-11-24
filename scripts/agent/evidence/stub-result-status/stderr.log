@@ -1,0 +1,1 @@
+[run-task] FALHA (result_status): O JSON indica falha: is_error=true, subtype="success" (esperado is_error=false, subtype="success").
